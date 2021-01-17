@@ -457,7 +457,7 @@ def get_student_points(Auth):
 ####################### Exploits ###############################
 
 # methods that are not supposed to be possible.
-class Exploits:
+class Exploit:
     def __init__(self,Auth):
 
         self.Auth=Auth

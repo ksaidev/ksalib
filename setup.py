@@ -7,7 +7,7 @@ VERSION = '0.1.0'
 PACKAGE_NAME = 'ksalib'
 AUTHOR = 'andyyeyeye'
 AUTHOR_EMAIL = 'andyye.jongcye@gmail.com'
-URL = ''
+URL = 'https://github.com/andyyeyeye/ksalib'
 
 LICENSE = 'The MIT License'
 DESCRIPTION = 'A library for KSA'
