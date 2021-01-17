@@ -11,15 +11,13 @@ URL = 'https://github.com/andyyeyeye/ksalib'
 
 LICENSE = 'The MIT License'
 DESCRIPTION = 'A library for KSA'
-LONG_DESCRIPTION = (HERE / "README.md").read_text()
+LONG_DESCRIPTION = open('README.md', 'r', encoding='UTF8').read()
 LONG_DESC_TYPE = "text/markdown"
 
 INSTALL_REQUIRES = [
       'requests',
       'bs4',
       'html2text',
-      're',
-      'html'
 ]
 
 setup(name=PACKAGE_NAME,

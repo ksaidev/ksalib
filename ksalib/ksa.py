@@ -3,8 +3,8 @@ from bs4 import BeautifulSoup
 import html2text
 import random
 import string
-from parserlib import HTMLTableParser
-from simplefunctions import download
+from .parserlib import HTMLTableParser
+from .simplefunctions import download
 
 
 global session_id
