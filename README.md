@@ -64,10 +64,6 @@ It currently has three methods.
 
 `exploit.outing()` 외출 외박 신청이 되있을때 외출 체크를 할 수 있게 해줌
 
-`exploit.lmsview(number)` takes integer as a input. enables users to see other people's posts corresponding to the integer on lms.
-
-`exploit.lmsfile(number,path)` takes integer and download path as input. enables user to download other people's posts corresponding to the integer on lms.
-
 
 Methods
 -------------
