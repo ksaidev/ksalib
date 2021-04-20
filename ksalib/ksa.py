@@ -7,11 +7,12 @@ from .parserlib import HTMLTableParser
 from .simplefunctions import download
 
 
-global session_id
+global SESSION_ID
 
-session_id=''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(20))
+SESSION_ID=''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(20))
 
 class Auth:
+
     def __init__(self, student_login=None, lms_login=None, gaonnuri_login=None, number=None, name=None):
         self.student_login = student_login
         self.lms_login = lms_login
@@ -20,7 +21,6 @@ class Auth:
         self.name = name
 
     def __str__(self):
-
         result={
             'login':{
                 'student_login': self.student_login,
@@ -32,7 +32,6 @@ class Auth:
                 'number':self.number
             }
         }
-
         return str(result)
 
     #student login
@@ -58,7 +57,7 @@ class Auth:
     def gaonnuri_auth(self,id,pwd):
 
         cookies = {
-            'PHPSESSID': session_id
+            'PHPSESSID': SESSION_ID
         }
 
         headers = {
@@ -66,8 +65,8 @@ class Auth:
         }
 
         data = {
-        'user_id': 'ksa19058',
-        'password': '19-058',
+        'user_id': id,
+        'password': pwd,
         'act': 'procMemberLogin',
         'xeVirtualRequestMethod': 'xml'
         }
@@ -94,7 +93,7 @@ class Post:
         if self.Auth.gaonnuri_login != None:
 
             cookies = {
-                'PHPSESSID': session_id
+                'PHPSESSID': SESSION_ID
             }
 
             headers = {
@@ -191,7 +190,7 @@ def get_gaonnuri_board_post(Auth,board="board_notice"):
 
 
         cookies = {
-            'PHPSESSID': session_id
+            'PHPSESSID': SESSION_ID
         }
 
         headers = {
@@ -239,7 +238,7 @@ def get_gaonnuri_board(Auth,board="board_notice"):
 
 
         cookies = {
-            'PHPSESSID': session_id
+            'PHPSESSID': SESSION_ID
         }
 
         headers = {
@@ -349,7 +348,7 @@ def get_gaonnuri_oneline(Auth):
         link='http://gaonnuri.ksain.net/xe/index.php?mid=special_online'
 
         cookies = {
-            'PHPSESSID': session_id
+            'PHPSESSID': SESSION_ID
         }
 
         headers = {
