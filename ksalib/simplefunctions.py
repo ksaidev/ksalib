@@ -17,3 +17,14 @@ def download(url,path):
     r = requests.get(url, allow_redirects=True)
     filename = get_filename_from_cd(r.headers.get('content-disposition'))
     open(os.path.join(path,filename), 'wb').write(r.content)
+
+def try_find(a):
+    if a == None:
+        pass
+    else:
+        a = a.text
+        if a == None:
+            pass
+        else:
+            a = a.strip()
+    return a
