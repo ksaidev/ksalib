@@ -2,8 +2,6 @@ import requests
 from bs4 import BeautifulSoup
 from .parserlib import HTMLTableParser
 
-############################### Student #################################
-
 class Sugang:
     def __init__(self,Auth):
         self.Auth=Auth

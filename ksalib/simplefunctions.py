@@ -19,11 +19,11 @@ def download(url,path):
     open(os.path.join(path,filename), 'wb').write(r.content)
 
 def try_find(a):
-    if a == None:
+    if a is None:
         pass
     else:
         a = a.text
-        if a == None:
+        if a is None:
             pass
         else:
             a = a.strip()
