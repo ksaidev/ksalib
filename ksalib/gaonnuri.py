@@ -9,15 +9,22 @@ main_url = f'{gaonnuri_url}/xe/'
 login_url = f'{main_url}login'
 index_url = f'{main_url}index.php'
 
+
+class Comment:
+    def __init__(self,author,content,id):
+        self.author = author
+        self.content = content
+        self.id = id
+
+    def __str__(self):
+        return f'{self.author}:{self.content}'
+
+
 # A class defining a single post
 class Post:
     def __init__(self,Auth,link):
         self.link = link
         self.Auth = Auth
-        self._get_rare()
-
-    # get all basic information on post
-    def _get_rare(self):
         if self.Auth.gaonnuri_login is not None:
             cookies = {
                 'PHPSESSID': self.Auth.SESSION_ID
@@ -29,7 +36,12 @@ class Post:
             response = requests.post(self.link, headers=headers, cookies=cookies)
         else:
             raise Exception('No gaonnuri login')
-        soup = BeautifulSoup(response.text,'html.parser')
+        self.soup = BeautifulSoup(response.text,'html.parser')
+        self._get_rare()
+
+    # get all basic information on post
+    def _get_rare(self):
+        soup = self.soup
         article = soup.find('article')
         self.rare = article
         info = soup.find('div', {"class": "board clear"})
@@ -44,10 +56,16 @@ class Post:
             self.time = try_find(time)
             author=info.find("div",{"class":"side"})
             self.author = try_find(author)
-            views=info.find("div",{"class":"side fr"})
-            self.views = try_find(views)
-        comments = {}
-        comment_soup = soup.find("ul",{"class":"fdb_lst_ul "})
+            others=info.find("div",{"class":"side fr"})
+            others = others.text.split(' ')
+            others = list(filter(lambda x: x.isdigit(), others))
+            self.views = int(others[0])
+        rec_button = soup.find('div', {'class':'rd_vote'})
+        rec_button = rec_button.find_all('b')
+        self.recommend = int(rec_button[0].text)
+        self.unrecommend = int(rec_button[1].text)
+        comments = []
+        comment_soup = soup.find("ul",{"class":"fdb_lst_ul"})
         if comment_soup is None:
             # print("no comments or fatal error")
             pass
@@ -66,7 +84,7 @@ class Post:
                 c = x.find("div",{"class":"meta"})
                 c = c.find("a")
                 c = c.text
-                comments[num] = {"name":c,"content":cmt}
+                comments.append(Comment(c, cmt, num))
         self.comments = comments
 
     def write_comment(self,content):
