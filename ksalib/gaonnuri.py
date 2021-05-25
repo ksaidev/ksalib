@@ -3,12 +3,12 @@ from bs4 import BeautifulSoup
 import html2text
 from .simplefunctions import try_find
 from xml.dom.minidom import parseString
+from datetime import datetime
 
 gaonnuri_url = 'http://gaonnuri.ksain.net'
 main_url = f'{gaonnuri_url}/xe/'
 login_url = f'{main_url}login'
 index_url = f'{main_url}index.php'
-
 
 class Comment:
     def __init__(self,author,content,id):
@@ -23,6 +23,8 @@ class Comment:
 # A class defining a single post
 class Post:
     def __init__(self,Auth,link):
+        if link.startswith('https'):
+            link = link[:len('https')-1] + link[len('https'):]
         self.link = link
         self.Auth = Auth
         if self.Auth.gaonnuri_login is not None:
@@ -53,7 +55,11 @@ class Post:
                     title=title.strip()
             self.title = title
             time=info.find("div",{"class": "fr"})
-            self.time = try_find(time)
+            time = try_find(time)
+            time = time.split(' ')
+            time[0] = time[0].split('.')
+            time[1] = time[1].split(':')
+            self.time = datetime(int(time[0][0]), int(time[0][1]), int(time[0][2]), int(time[1][0]), int(time[1][1]))
             author=info.find("div",{"class":"side"})
             self.author = try_find(author)
             others=info.find("div",{"class":"side fr"})
@@ -62,8 +68,9 @@ class Post:
             self.views = int(others[0])
         rec_button = soup.find('div', {'class':'rd_vote'})
         rec_button = rec_button.find_all('b')
+        rec_button = list(filter(lambda x: x.text != '', rec_button))
         self.recommend = int(rec_button[0].text)
-        self.unrecommend = int(rec_button[1].text)
+        self.unrecommend = -int(rec_button[1].text)
         comments = []
         comment_soup = soup.find("ul",{"class":"fdb_lst_ul"})
         if comment_soup is None:
@@ -194,7 +201,7 @@ class Board:
         links = set()
         for page in range(1, page_num+1):
             links.update(self.links_in_page(page))
-        return links
+        return list(links)
 
     # get all links on a page of the board
     def links_in_page(self, page):
