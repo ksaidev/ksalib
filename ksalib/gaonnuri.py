@@ -9,6 +9,21 @@ gaonnuri_url = 'http://gaonnuri.ksain.net'
 main_url = f'{gaonnuri_url}/xe/'
 login_url = f'{main_url}login'
 index_url = f'{main_url}index.php'
+board_url = main_url + '{}'
+
+def get_gaonnuri_response(Auth, link):
+    if Auth.gaonnuri_login is not None:
+        cookies = {
+            'PHPSESSID': Auth.SESSION_ID
+        }
+        headers = {
+            'Referer': login_url
+        }
+        # get html (site does not have XHR)
+        response = requests.post(link, headers=headers, cookies=cookies)
+    else:
+        raise Exception('No gaonnuri login')
+    return response
 
 class Comment:
     def __init__(self,author,content,id):
@@ -27,17 +42,7 @@ class Post:
             link = link[:len('https')-1] + link[len('https'):]
         self.link = link
         self.Auth = Auth
-        if self.Auth.gaonnuri_login is not None:
-            cookies = {
-                'PHPSESSID': self.Auth.SESSION_ID
-            }
-            headers = {
-                'Referer': login_url
-            }
-            #get html (site does not have XHR)
-            response = requests.post(self.link, headers=headers, cookies=cookies)
-        else:
-            raise Exception('No gaonnuri login')
+        response = get_gaonnuri_response(self.Auth, self.link)
         self.soup = BeautifulSoup(response.text,'html.parser')
         self._get_rare()
 
@@ -164,20 +169,10 @@ class Board:
     def __init__(self, Auth, board_name):
         self.Auth = Auth
         self.board_name = board_name
-        self.link = f'{main_url}{board_name}'
-        if self.Auth.gaonnuri_login is not None:
-            cookies = {
-                'PHPSESSID': self.Auth.SESSION_ID
-            }
-            headers = {
-                'Referer': login_url
-            }
-            #get html (site does not have XHR)
-            response = requests.post(self.link, headers=headers, cookies=cookies)
-            soup=BeautifulSoup(response.text,'html.parser')
-            self.first_page = soup
-        else:
-            raise Exception('No gaonnuri login')
+        self.link = board_url.format(board_name)
+        response = get_gaonnuri_response(self.Auth, self.link)
+        soup=BeautifulSoup(response.text,'html.parser')
+        self.first_page = soup
 
     # number of pages(not posts) on the board
     def page_num(self):
@@ -205,14 +200,9 @@ class Board:
 
     # get all links on a page of the board
     def links_in_page(self, page):
+        link = self.page_link(page)
+        response = get_gaonnuri_response(self.Auth, link)
         list_posts = []
-        cookies = {
-            'PHPSESSID': self.Auth.SESSION_ID
-        }
-        headers = {
-            'Referer': login_url
-        }
-        response = requests.post(self.page_link(page), headers=headers, cookies=cookies)
         soup = BeautifulSoup(response.text, 'html.parser')
         posts = soup.find_all('tr')
         # get rid of unnecessary elements in grid
@@ -285,103 +275,73 @@ class Board:
 
 # returns only basic information
 def get_gaonnuri_board(Auth,board="board_notice"):
-    if Auth.gaonnuri_login is not None:
-        link=f'{main_url}{board}'
-        cookies = {
-            'PHPSESSID': Auth.SESSION_ID
-        }
-        headers = {
-            'Referer': login_url
-        }
-        list_posts=[]
-        #get html (site does not have XHR)
-        response = requests.post(link, headers=headers, cookies=cookies)
-        soup=BeautifulSoup(response.text,'html.parser')
-        posts = soup.find_all('tr')
-        #get rid of unnecessary elements in grid
-        posts=posts[2:]
-        for x in posts:
-            #number
-            no=x.find("td",class_="no")
-            no = try_find(no)
-            #title, link
-            title=x.find("td",class_="title")
-            title_link=title.find("a")
-            if title_link is None:
-                title=None
+    link=board_url.format(board)
+    response = get_gaonnuri_response(Auth, link)
+    list_posts=[]
+    soup = BeautifulSoup(response.text, 'html.parser')
+    posts = soup.find_all('tr')
+    # get rid of unnecessary elements in grid
+    posts = posts[2:]
+    for x in posts:
+        # number
+        no = x.find("td", class_="no")
+        no = try_find(no)
+        # title, link
+        title = x.find("td", class_="title")
+        title_link = title.find("a")
+        if title_link is None:
+            title = None
+        else:
+            title = title_link.text
+            if title is None:
+                pass
             else:
-                title=title_link.text
-                if title is None:
-                    pass
-                else:
-                    title=title.strip()
-            if title_link is None:
-                link=None
-            else:
-                try:
-                    link=title_link['href']
-                except:
-                    pass
-            author = x.find("td",class_="cate")
-            if author is None:
-                author = x.find("td",class_="author")
-            if author is not None:
-                author=author.text
-            time=x.find("td",class_="time")
-            if time is not None:
-                time=time.text
-            views=x.find("td",class_="m_no")
-            if views is not None:
-                views=views.text
-            #append info into list_posts
-            info={
-                'no':no,
-                'title':title,
-                'link':link,
-                'author':author,
-                'time':time,
-                'views':views
-            }
-            list_posts.append(info)
-        return list_posts
-    else:
-        raise Exception('No gaonnuri login')
+                title = title.strip()
+        if title_link is None:
+            link = None
+        else:
+            try:
+                link = title_link['href']
+            except:
+                pass
+        author = x.find("td", class_="cate")
+        if author is None:
+            author = x.find("td", class_="author")
+        if author is not None:
+            author = author.text
+        time = x.find("td", class_="time")
+        if time is not None:
+            time = time.text
+        views = x.find("td", class_="m_no")
+        if views is not None:
+            views = views.text
+        # append info into list_posts
+        info = {
+            'no': no,
+            'title': title,
+            'link': link,
+            'author': author,
+            'time': time,
+            'views': views
+        }
+        list_posts.append(info)
+    return list_posts
 
 #For one-line posts
 def get_gaonnuri_oneline(Auth):
-    if Auth.gaonnuri_login is not None:
-        link=f'{index_url}?mid=special_online'
-        cookies = {
-            'PHPSESSID': Auth.SESSION_ID
-        }
-        headers = {
-            'Referer': login_url
-        }
-        list_posts=[]
-        #get html (site does not have XHR)
-        response = requests.post(link, headers=headers, cookies=cookies)
-        soup=BeautifulSoup(response.text,'html.parser')
-        posts = soup.find_all("font",class_="xe_content")
-        for x in posts:
-            list_posts.append(x.text)
-        return list_posts
-    else:
-        raise Exception('No gaonnuri login')
+    link=f'{index_url}?mid=special_online'
+    response = get_gaonnuri_response(Auth, link)
+    list_posts = []
+    soup = BeautifulSoup(response.text, 'html.parser')
+    posts = soup.find_all("font", class_="xe_content")
+    for x in posts:
+        list_posts.append(x.text)
+    return list_posts
 
 # returns dict with board_name -> board_label
 # (example: 'board_notice' -> '공지사항')
 def get_board_names(Auth):
-    if Auth.gaonnuri_login is not None:
-        cookies = {
-            'PHPSESSID': Auth.SESSION_ID
-        }
-        headers = {
-            'Referer': login_url
-        }
-        # get html (site does not have XHR)
-        response = requests.post(main_url, headers=headers, cookies=cookies)
-    else:
-        raise Exception('No gaonnuri login')
+    response = get_gaonnuri_response(Auth, main_url)
     soup = BeautifulSoup(response.text, 'html.parser')
     dropdowns = soup.find_all('ul', {'class':'total_sub1'})
     boards = dropdowns[0]
