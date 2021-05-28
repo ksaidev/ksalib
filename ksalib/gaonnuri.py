@@ -11,7 +11,13 @@ login_url = f'{main_url}login'
 index_url = f'{main_url}index.php'
 board_url = main_url + '{}'
 
+def to_http(link):
+    if link.startswith('https'):
+        link = 'http' + link[len('https'):]
+    return link
+
 def get_gaonnuri_response(Auth, link):
+    link = to_http(link)
     if Auth.gaonnuri_login is not None:
         cookies = {
             'PHPSESSID': Auth.SESSION_ID
@@ -38,8 +44,6 @@ class Comment:
 # A class defining a single post
 class Post:
     def __init__(self,Auth,link):
-        if link.startswith('https'):
-            link = link[:len('https')-1] + link[len('https'):]
         self.link = link
         self.Auth = Auth
         response = get_gaonnuri_response(self.Auth, self.link)
@@ -352,3 +356,14 @@ def get_board_names(Auth):
         start = link.rfind('/')+1
         names[link[start:]] = a.text.strip()
     return names
+
+def get_special_links(Auth):
+    response = get_gaonnuri_response(Auth, main_url)
+    soup = BeautifulSoup(response.text, 'html.parser')
+    dropdowns = soup.find_all('ul', {'class': 'total_sub1'})
+    boards = dropdowns[1]
+    anchors = boards.find_all('a')
+    links = []
+    for a in anchors:
+        links.append(a['href'])
+    return links
