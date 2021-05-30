@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import html2text
-from .simplefunctions import try_find
+from .simplefunctions import try_find, to_http, str_to_time
 from xml.dom.minidom import parseString
 from datetime import datetime
 
@@ -11,10 +11,6 @@ login_url = f'{main_url}login'
 index_url = f'{main_url}index.php'
 board_url = main_url + '{}'
 
-def to_http(link):
-    if link.startswith('https'):
-        link = 'http' + link[len('https'):]
-    return link
 
 def get_gaonnuri_response(Auth, link):
     link = to_http(link)
@@ -65,10 +61,7 @@ class Post:
             self.title = title
             time=info.find("div",{"class": "fr"})
             time = try_find(time)
-            time = time.split(' ')
-            time[0] = time[0].split('.')
-            time[1] = time[1].split(':')
-            self.time = datetime(int(time[0][0]), int(time[0][1]), int(time[0][2]), int(time[1][0]), int(time[1][1]))
+            self.time = str_to_time(time)
             author=info.find("div",{"class":"side"})
             self.author = try_find(author)
             others=info.find("div",{"class":"side fr"})
