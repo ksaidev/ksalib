@@ -7,6 +7,7 @@ from simplefunctions import to_http, str_to_time
 
 main_url = 'http://lms.ksa.hs.kr'
 login_url = main_url + '/Source/Include/login_ok.php'
+comm_url = main_url + '/Source/Community/vodBoard.php'
 board_url = main_url + '/nboard.php?db=vod&scBCate={}'
 post_url = main_url + '/nboard.php?db=vod&mode=view&idx={}&page=1&ss=on&sc=&sn=&db=vod&scBCate={}'
 
@@ -78,3 +79,53 @@ class Post:
         for c in self.comments:
             s += f'\n{c}'
         return s
+
+
+class Board:
+    def __init__(self, auth, scBCate):
+        self.auth = auth
+        self.scBCate = scBCate
+        self._get_info()
+
+    def _get_info(self):
+        link = board_url.format(self.scBCate)
+        response = get_lms_response(self.auth, link)
+        soup = BeautifulSoup(response.text, 'html.parser')
+        title = soup.find('div', {'id': 'vodBoardTitle'}).text
+        title = title.split('>')
+        self.subject = title[0].strip()
+        self.teacher = title[1].strip()
+        boards = soup.find('div', {'id': 'vodBoardLeft'})
+        self.name = boards.find('a', {'class': 'selected'}).text
+        info = soup.find(class_='NB_tPageArea').text
+        start = info.index(':') + 1
+        end = info.index('건')
+        self.post_num = int(info[start:end])
+        start = info.index('/') + 1
+        end = info.index('page')
+        self.page_num = int(info[start:end])
+
+    def __str__(self):
+        return f'{self.subject} > {self.teacher} > {self.name}'
+
+    def page_link(self, page):
+        return board_page_url.format(page, self.scBCate)
+
+    def get_link_page(self, page):
+        link = self.page_link(page)
+        response = get_lms_response(self.auth, link)
+        soup = BeautifulSoup(response.text, 'html.parser')
+        posts = soup.find('table', {'id': 'NB_ListTable'})
+        tds = posts.find_all('td', {'class': 'tdPad4L6px'})
+        links = []
+        for td in tds:
+            a = td.find('a')
+            if a:
+                links.append(main_url+a['href'])
+        return links
+
+    def get_all_link(self):
+        links = []
+        for page in range(1, self.page_num+1):
+            links.extend(self.get_link_page(page))
+        return links
