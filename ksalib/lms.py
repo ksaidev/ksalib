@@ -1,6 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-from datetime import datetime
+from urllib import parse
 
 from Auth import Auth
 from simplefunctions import to_http, str_to_time
@@ -9,6 +9,7 @@ main_url = 'http://lms.ksa.hs.kr'
 login_url = main_url + '/Source/Include/login_ok.php'
 comm_url = main_url + '/Source/Community/vodBoard.php'
 board_url = main_url + '/nboard.php?db=vod&scBCate={}'
+board_page_url = main_url + '/nboard.php?page={}&ss=on&sc=&sn=&db=vod&scBCate={}'
 post_url = main_url + '/nboard.php?db=vod&mode=view&idx={}&page=1&ss=on&sc=&sn=&db=vod&scBCate={}'
 
 def get_lms_response(auth, link):
@@ -34,10 +35,18 @@ class Comment:
 post_labels = ['이름: ', '등록일: ', '최종수정일: ', '조회: ']
 
 class Post:
-    def __init__(self, auth, index, scBCate):
+    # enter link, or index and scBCate
+    def __init__(self, auth, link=None, index=None, scBCate=None):
         self.auth = auth
-        self.index = index
-        self.scBCate = scBCate
+        if link:
+            self.link = link
+            params = dict(parse.parse_qsl(parse.urlsplit(self.link).query))
+            self.index = params.get('idx')
+            self.scBCate = params.get('scBCate')
+        else:
+            self.index = index
+            self.scBCate = scBCate
+            self.link = post_url.format(index, scBCate)
         self._get_info()
 
     def _get_info(self):
