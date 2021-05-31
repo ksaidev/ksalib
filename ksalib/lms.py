@@ -149,9 +149,3 @@ def get_all_boards(auth):
         if a.has_attr('vsidx'):
             boards[int(a['vsidx'])] = a.text.strip()
     return boards
-
-f = open('C:/My Folder/KSA/KSA Projects/SearchKSA/search/auth_data/lms_data.txt')
-text = f.readlines()
-auth = Auth()
-auth.lms_auth(text[0], text[1])
-print(get_all_boards(auth))
