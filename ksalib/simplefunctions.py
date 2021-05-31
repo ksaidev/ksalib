@@ -38,7 +38,7 @@ def to_http(link):
 # "year-month-day hour:minute:second"
 def str_to_time(s):
     time = s.split(' ')
-    time[0] = time[0].split('.')
+    time[0] = time[0].split('-')
     time[1] = time[1].split(':')
     for i in range(2):
         for j in range(3):
