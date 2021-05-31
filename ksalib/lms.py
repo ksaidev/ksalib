@@ -32,6 +32,15 @@ class Comment:
         return f'{self.author}: {self.content}'
 
 
+class File:
+    def __init__(self, link, name):
+        self.link = link
+        self.name = name
+
+    def __str__(self):
+        return self.name+self.link
+
+
 post_labels = ['이름: ', '등록일: ', '최종수정일: ', '조회: ']
 
 class Post:
@@ -65,6 +74,12 @@ class Post:
         self.time = str_to_time(info[1])
         self.last_edit = str_to_time(info[2])
         self.views = int(info[3])
+        files = soup.find_all('a', {'class': 'Board2'})
+        self.files = []
+        for file in files:
+            name = file.text.strip()
+            name = name[:name.rfind('(')]
+            self.files.append(File(main_url+file['href'], name))
         self.comments = []
         comments = soup.find('div', {'id': 'NBoardCommentArea'}).findChildren('table', recursive=False)
         for comment in comments:
@@ -84,6 +99,9 @@ class Post:
         s += f'{post_labels[2]}{str(self.last_edit)} '
         s += f'{post_labels[3]}{str(self.views)}'
         s += ')'
+        s += '\n'
+        for f in self.files:
+            s += f'{f} '
         s += '\n' + self.article
         for c in self.comments:
             s += f'\n{c}'
