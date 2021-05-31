@@ -138,3 +138,20 @@ class Board:
         for page in range(1, self.page_num+1):
             links.extend(self.get_link_page(page))
         return links
+
+def get_all_boards(auth):
+    response = get_lms_response(auth, comm_url)
+    soup = BeautifulSoup(response.text, 'html.parser')
+    boards = soup.find('div', {'id': 'tutorListLayer'})
+    nums = boards.find_all('a')
+    boards = {}
+    for a in nums:
+        if a.has_attr('vsidx'):
+            boards[int(a['vsidx'])] = a.text.strip()
+    return boards
+
+f = open('C:/My Folder/KSA/KSA Projects/SearchKSA/search/auth_data/lms_data.txt')
+text = f.readlines()
+auth = Auth()
+auth.lms_auth(text[0], text[1])
+print(get_all_boards(auth))
