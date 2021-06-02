@@ -1,9 +1,9 @@
 import requests
 from bs4 import BeautifulSoup
 from urllib import parse
+from collections import OrderedDict
 
-from Auth import Auth
-from simplefunctions import to_http, str_to_time
+from .simplefunctions import to_http, str_to_time
 
 main_url = 'http://lms.ksa.hs.kr'
 login_url = main_url + '/Source/Include/login_ok.php'
@@ -38,7 +38,7 @@ class File:
         self.name = name
 
     def __str__(self):
-        return self.name+self.link
+        return self.name
 
 
 post_labels = ['이름: ', '등록일: ', '최종수정일: ', '조회: ']
@@ -138,7 +138,7 @@ class Board:
     def page_link(self, page):
         return board_page_url.format(page, self.scBCate)
 
-    def get_link_page(self, page):
+    def get_links_page(self, page):
         link = self.page_link(page)
         response = get_lms_response(self.auth, link)
         soup = BeautifulSoup(response.text, 'html.parser')
@@ -152,17 +152,19 @@ class Board:
         return links
 
     def get_all_link(self):
-        links = []
+        links = set()
         for page in range(1, self.page_num+1):
-            links.extend(self.get_link_page(page))
-        return links
+            links.update(self.get_link_page(page))
+        return list(links)
 
+# returns dict with scBCate -> board name
+# (example: 1563 -> '자료구조 선생님 자료실')
 def get_all_boards(auth):
     response = get_lms_response(auth, comm_url)
     soup = BeautifulSoup(response.text, 'html.parser')
     boards = soup.find('div', {'id': 'tutorListLayer'})
     nums = boards.find_all('a')
-    boards = {}
+    boards = OrderedDict()
     for a in nums:
         if a.has_attr('vsidx'):
             boards[int(a['vsidx'])] = a.text.strip()

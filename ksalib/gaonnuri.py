@@ -4,6 +4,7 @@ import html2text
 from .simplefunctions import try_find, to_http, str_to_time
 from xml.dom.minidom import parseString
 from datetime import datetime
+from collections import OrderedDict
 
 gaonnuri_url = 'http://gaonnuri.ksain.net'
 main_url = f'{gaonnuri_url}/xe/'
@@ -343,7 +344,7 @@ def get_board_names(Auth):
     dropdowns = soup.find_all('ul', {'class':'total_sub1'})
     boards = dropdowns[0]
     anchors = boards.find_all('a')
-    names =dict()
+    names = OrderedDict()
     for a in anchors:
         link = a['href']
         start = link.rfind('/')+1
