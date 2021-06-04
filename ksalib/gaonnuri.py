@@ -62,7 +62,7 @@ class Post:
             self.title = title
             time=info.find("div",{"class": "fr"})
             time = try_find(time)
-            self.time = str_to_time(time)
+            self.time = str_to_time(time, d1='.')
             author=info.find("div",{"class":"side"})
             self.author = try_find(author)
             others=info.find("div",{"class":"side fr"})

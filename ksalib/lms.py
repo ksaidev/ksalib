@@ -115,8 +115,8 @@ class Board:
         self._get_info()
 
     def _get_info(self):
-        link = board_url.format(self.scBCate)
-        response = get_lms_response(self.auth, link)
+        self.link = board_url.format(self.scBCate)
+        response = get_lms_response(self.auth, self.link)
         soup = BeautifulSoup(response.text, 'html.parser')
         title = soup.find('div', {'id': 'vodBoardTitle'}).text
         title = title.split('>')
