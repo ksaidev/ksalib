@@ -2,13 +2,22 @@ import requests
 from bs4 import BeautifulSoup
 from .parserlib import HTMLTableParser
 
+main_url = 'http://students.ksa.hs.kr'
+login_url = main_url + '/scmanager/stuweb/loginProc.jsp'
+sugang_link = main_url + '/scmanager/stuweb/kor/sukang/state.jsp'
+
+def get_student_response(auth, link):
+    with requests.Session() as s:
+        s.post(login_url, data={'id': auth.student_login['id'], 'pwd': auth.student_login['pwd']})
+        response = s.get(link)
+        return response
+
+
 class Sugang:
     def __init__(self,Auth):
         self.Auth=Auth
-        with requests.Session() as s:
-            response = s.post('http://students.ksa.hs.kr/scmanager/stuweb/loginProc.jsp',  data={'id': self.Auth.student_login['id'],'pwd': self.Auth.student_login['pwd']})
-            response = s.get('http://students.ksa.hs.kr/scmanager/stuweb/kor/sukang/state.jsp')
-            self.html=response.text
+        response = get_student_response(self.Auth, sugang_link)
+        self.html=response.text
 
     def table(self):
         soup=BeautifulSoup(self.html,'html.parser')
