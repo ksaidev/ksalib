@@ -2,8 +2,6 @@
 
 A library enabling developers to easily build simple and complicated programs for use in KSA
 
-currently under construction
-
 
 Authorization
 -------------
